@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   id-token: write
 
 jobs:
@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -55,12 +57,65 @@ jobs:
       - name: Check distributions
         run: uvx twine check dist/*
 
-      - name: Publish to PyPI
+      - name: Publish to PyPI with token
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
         env:
           UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
         run: |
-          if [ -n "${UV_PUBLISH_TOKEN}" ]; then
-            uv publish
-          else
-            uv publish --trusted-publishing always
-          fi
+          unset UV_PUBLISH_USERNAME UV_PUBLISH_PASSWORD
+          uv publish --token "${UV_PUBLISH_TOKEN}"
+
+      - name: Publish to PyPI with trusted publishing
+        if: ${{ secrets.PYPI_API_TOKEN == '' }}
+        run: |
+          unset UV_PUBLISH_USERNAME UV_PUBLISH_PASSWORD UV_PUBLISH_TOKEN
+          uv publish --trusted-publishing always
+
+      - name: Extract release notes from changelog
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          python - <<'PY'
+          import os
+          from pathlib import Path
+
+          tag = os.environ["TAG"]
+          version = tag[1:] if tag.startswith("v") else tag
+
+          changelog = Path("CHANGELOG.md").read_text().splitlines()
+          header = f"## [{version}]"
+
+          start = None
+          end = None
+          for idx, line in enumerate(changelog):
+              if line.startswith(header):
+                  start = idx + 1
+                  continue
+              if start is not None and line.startswith("## ["):
+                  end = idx
+                  break
+
+          if start is None:
+              raise SystemExit(
+                  f"Could not find changelog section for version {version} in CHANGELOG.md."
+              )
+
+          if end is None:
+              end = len(changelog)
+
+          notes = "\n".join(changelog[start:end]).strip()
+          if not notes:
+              raise SystemExit(f"Empty changelog section for version {version}.")
+
+          Path("RELEASE_NOTES.md").write_text(notes + "\n")
+          print("Wrote RELEASE_NOTES.md from CHANGELOG.md")
+          PY
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          files: |
+            dist/*.tar.gz
+            dist/*.whl

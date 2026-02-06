@@ -94,3 +94,10 @@ uv build
 uvx twine check dist/*
 uv publish
 ```
+
+## Releases
+
+Tag-based releases use `.github/workflows/release.yml` and expect:
+
+- `pyproject.toml` version matches the tag (`vX.Y.Z`).
+- A matching `CHANGELOG.md` section exists (`## [X.Y.Z] - YYYY-MM-DD`).
