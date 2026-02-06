@@ -57,22 +57,7 @@ jobs:
       - name: Check distributions
         run: uvx twine check dist/*
 
-      - name: Publish to PyPI with token
-        if: ${{ secrets.PYPI_API_TOKEN != '' }}
-        env:
-          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          env \
-            -u UV_PUBLISH_USERNAME \
-            -u UV_PUBLISH_PASSWORD \
-            -u TWINE_USERNAME \
-            -u TWINE_PASSWORD \
-            -u PYPI_USERNAME \
-            -u PYPI_PASSWORD \
-            uv publish --token "${UV_PUBLISH_TOKEN}"
-
       - name: Publish to PyPI with trusted publishing
-        if: ${{ secrets.PYPI_API_TOKEN == '' }}
         run: |
           env \
             -u UV_PUBLISH_USERNAME \
