@@ -475,7 +475,7 @@ async def _request_openai_response(
     base_url: str | None,
 ) -> dict[str, Any]:
     try:
-        from openai import AsyncOpenAI  # type: ignore[import-not-found]
+        from openai import AsyncOpenAI
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError(
             "OpenAI provider requires the `openai` package. "

@@ -69,6 +69,7 @@ Current status:
   - unified runtime APIs (`stream`, `complete`, `stream_simple`, `complete_simple`)
   - Agent adapter (`create_agent_stream_fn`)
   - mock provider for deterministic local development
+  - initial OpenAI Responses provider implementation
 - End-to-end `Agent` example added and tested.
 
 ### Phase 3: SDK Session Layer

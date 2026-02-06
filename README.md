@@ -46,6 +46,7 @@ src/pi_py/pi_ai/
   registry.py      # provider registry + defaults
   runtime.py       # stream/complete APIs + Agent adapter
   providers/mock.py
+  providers/openai.py
 ```
 
 ## End-to-end example
@@ -53,7 +54,9 @@ src/pi_py/pi_ai/
 Run:
 
 ```bash
+uv sync --extra openai
+export OPENAI_API_KEY=your_key_here
 uv run python examples/agent_e2e.py
 ```
 
-This example creates an `Agent`, routes model calls through the new `pi_ai` runtime layer, invokes a tool, and prints the final assistant response.
+This example uses OpenAI (`gpt-5-mini`), routes calls through `pi_ai`, invokes a tool, and prints the final assistant response.

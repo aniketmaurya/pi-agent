@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import os
 from collections.abc import Callable, Mapping
 from typing import Any
 
@@ -59,13 +60,19 @@ def on_agent_event(event: AgentEvent) -> None:
 
 
 async def main() -> None:
+    if not os.getenv("OPENAI_API_KEY"):
+        raise RuntimeError(
+            "OPENAI_API_KEY is not set. "
+            "Set it and run `uv run python examples/agent_e2e.py`."
+        )
+
     registry = create_default_registry()
 
     agent = Agent(
         stream_fn=create_agent_stream_fn(registry),
         session_id="agent-e2e-demo",
     )
-    agent.set_model(Model(id="mock-model", provider="mock-provider", api="mock-api"))
+    agent.set_model(Model(id="gpt-5-mini", provider="openai", api="openai"))
     agent.set_system_prompt(
         "You are a concise assistant. Use get_weather when users ask weather questions."
     )
