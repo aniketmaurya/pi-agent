@@ -32,3 +32,4 @@ def test_default_registry_has_mock_and_openai() -> None:
 
     assert registry.get("mock") is not None
     assert registry.get("openai") is not None
+    assert registry.get("openai-completions") is not None

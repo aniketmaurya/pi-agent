@@ -70,8 +70,9 @@ Current status:
   - Agent adapter (`create_agent_stream_fn`)
   - mock provider for deterministic local development
   - initial OpenAI Responses provider implementation
-  - OpenAI streaming event parsing for text/tool-call deltas
-- End-to-end `Agent` example added and tested.
+  - OpenAI Completions-compatible provider implementation
+  - OpenAI streaming event parsing for text/tool-call/reasoning deltas
+  - End-to-end `Agent` example added and tested.
 
 ### Phase 3: SDK Session Layer
 

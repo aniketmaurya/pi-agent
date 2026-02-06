@@ -13,7 +13,10 @@ Phase 1 and an initial Phase 2 slice are implemented:
 - Agent loop runtime with turn/tool orchestration and steering/follow-up queues
 - Stateful `Agent` wrapper with prompt/continue/abort/wait APIs
 - Provider abstraction (`pi_ai`) with registry + runtime adapter
-- Providers: mock provider and OpenAI Responses provider (with streaming deltas)
+- Providers:
+  - mock provider
+  - OpenAI Responses provider (with streaming deltas)
+  - OpenAI Completions-compatible provider (with streaming deltas)
 - Strict checks and tests (`ruff`, `mypy`, `pytest`)
 
 Roadmap details are tracked in [`PLAN.md`](./PLAN.md).
@@ -47,6 +50,7 @@ src/pi_py/pi_ai/
   runtime.py       # stream/complete APIs + Agent adapter
   providers/mock.py
   providers/openai.py
+  providers/openai_completions.py
 ```
 
 ## End-to-end example
