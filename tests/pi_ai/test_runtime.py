@@ -11,10 +11,14 @@ from pi_py.agent_core import (
     AgentTool,
     AgentToolResult,
     AssistantMessage,
+    LlmContext,
     Model,
     TextContent,
+    ToolCall,
+    ToolResultMessage,
+    UserMessage,
 )
-from pi_py.pi_ai import complete_simple, create_agent_stream_fn, create_default_registry
+from pi_py.pi_ai import complete, complete_simple, create_agent_stream_fn, create_default_registry
 
 
 def _assistant_text(message: AssistantMessage) -> str:
@@ -83,3 +87,32 @@ async def test_agent_e2e_uses_mock_provider_and_tool() -> None:
     assert isinstance(agent.state.messages[-1], AssistantMessage)
     assert _assistant_text(agent.state.messages[-1]).startswith("Weather update:")
     assert "sunny in San Francisco" in _assistant_text(agent.state.messages[-1])
+
+
+@pytest.mark.asyncio
+async def test_complete_prefers_latest_user_message_over_old_tool_result() -> None:
+    registry = create_default_registry()
+    model = Model(id="mock-model", provider="mock-provider", api="mock-api")
+    context = LlmContext(
+        messages=[
+            UserMessage(content="What is the weather in Paris?"),
+            ToolResultMessage(
+                tool_call_id="tool-call-1",
+                tool_name="get_weather",
+                content=[TextContent(text="sunny in Paris")],
+                is_error=False,
+            ),
+            UserMessage(content="Now check the weather in Tokyo."),
+        ]
+    )
+
+    message = await complete(
+        model=model,
+        context=context,
+        registry=registry,
+    )
+
+    assert message.stop_reason == "toolUse"
+    tool_calls = [block for block in message.content if isinstance(block, ToolCall)]
+    assert len(tool_calls) == 1
+    assert tool_calls[0].arguments == {"city": "Tokyo"}

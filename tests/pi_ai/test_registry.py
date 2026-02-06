@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from pi_py.agent_core import Model
-from pi_py.pi_ai import ProviderRegistry
+from pi_py.pi_ai import ProviderRegistry, create_default_registry
 from pi_py.pi_ai.providers import MockProvider
 
 
@@ -25,3 +25,10 @@ def test_registry_raises_for_missing_provider() -> None:
 
     with pytest.raises(LookupError, match="No provider registered"):
         registry.resolve(model)
+
+
+def test_default_registry_has_mock_and_openai() -> None:
+    registry = create_default_registry()
+
+    assert registry.get("mock") is not None
+    assert registry.get("openai") is not None

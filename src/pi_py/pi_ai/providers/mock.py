@@ -18,6 +18,8 @@ from ...agent_core.types import (
 )
 from ..types import PiAIRequest
 
+ActionableMessage = UserMessage | ToolResultMessage
+
 
 @dataclass(slots=True)
 class MockProvider:
@@ -69,19 +71,25 @@ class MockProvider:
         )
 
     def _build_assistant_message(self, request: PiAIRequest) -> AssistantMessage:
-        latest_tool_result = _find_latest_tool_result(request)
-        if (
-            latest_tool_result is not None
-            and latest_tool_result.tool_name == self.weather_tool_name
-        ):
-            result_text = _extract_tool_result_text(latest_tool_result)
+        latest_actionable_message = _find_latest_actionable_message(request)
+
+        if isinstance(latest_actionable_message, ToolResultMessage):
+            if latest_actionable_message.tool_name == self.weather_tool_name:
+                result_text = _extract_tool_result_text(latest_actionable_message)
+                return self._assistant_message(
+                    request=request,
+                    content=[TextContent(text=f"Weather update: {result_text}")],
+                    stop_reason="stop",
+                )
+
+            result_text = _extract_tool_result_text(latest_actionable_message)
             return self._assistant_message(
                 request=request,
-                content=[TextContent(text=f"Weather update: {result_text}")],
+                content=[TextContent(text=f"Tool result: {result_text}")],
                 stop_reason="stop",
             )
 
-        latest_user_text = _find_latest_user_text(request)
+        latest_user_text = _extract_user_text(latest_actionable_message)
         if "weather" in latest_user_text.lower():
             city = _extract_city_from_prompt(latest_user_text)
             tool_call = ToolCall(
@@ -124,26 +132,29 @@ class MockProvider:
         return f"tool-call-{self._tool_call_counter}"
 
 
-def _find_latest_user_text(request: PiAIRequest) -> str:
-    for message in reversed(request.context.messages):
-        if isinstance(message, UserMessage):
-            if isinstance(message.content, str):
-                return message.content
-
-            text_parts = [
-                block.text
-                for block in message.content
-                if isinstance(block, TextContent)
-            ]
-            return " ".join(text_parts).strip()
-    return ""
-
-
-def _find_latest_tool_result(request: PiAIRequest) -> ToolResultMessage | None:
+def _find_latest_actionable_message(request: PiAIRequest) -> ActionableMessage | None:
     for message in reversed(request.context.messages):
         if isinstance(message, ToolResultMessage):
             return message
+
+        if isinstance(message, UserMessage):
+            return message
     return None
+
+
+def _extract_user_text(message: ActionableMessage | None) -> str:
+    if not isinstance(message, UserMessage):
+        return ""
+
+    if isinstance(message.content, str):
+        return message.content
+
+    text_parts = [
+        block.text
+        for block in message.content
+        if isinstance(block, TextContent)
+    ]
+    return " ".join(text_parts).strip()
 
 
 def _extract_tool_result_text(message: ToolResultMessage) -> str:

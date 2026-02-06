@@ -36,13 +36,16 @@ class ProviderRegistry:
 
 
 def create_default_registry() -> ProviderRegistry:
-    from .providers import MockProvider
+    from .providers import MockProvider, OpenAIResponsesProvider
 
     registry = ProviderRegistry()
     mock_provider = MockProvider()
+    openai_provider = OpenAIResponsesProvider()
     registry.register("mock", mock_provider)
     registry.register("mock-api", mock_provider)
     registry.register("mock-provider", mock_provider)
+    registry.register("openai", openai_provider)
+    registry.register("openai-responses", openai_provider)
     return registry
 
 

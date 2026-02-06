@@ -1,4 +1,4 @@
-from .providers import MockProvider
+from .providers import MockProvider, OpenAIResponsesProvider
 from .registry import ProviderRegistry, create_default_registry
 from .runtime import (
     complete,
@@ -11,6 +11,7 @@ from .types import PiAIRequest, Provider
 
 __all__ = [
     "MockProvider",
+    "OpenAIResponsesProvider",
     "PiAIRequest",
     "Provider",
     "ProviderRegistry",

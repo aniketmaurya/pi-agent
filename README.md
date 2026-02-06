@@ -6,12 +6,14 @@ This repository is an open-source Python reimplementation of core ideas from Pi 
 
 ## Status
 
-Phase 1 is implemented:
+Phase 1 and an initial Phase 2 slice are implemented:
 
 - Core typed domain model for messages, content blocks, tools, usage, model config
 - Async event stream primitive with terminal-result handling
 - Agent loop runtime with turn/tool orchestration and steering/follow-up queues
 - Stateful `Agent` wrapper with prompt/continue/abort/wait APIs
+- Provider abstraction (`pi_ai`) with registry + runtime adapter
+- Providers: mock provider and initial OpenAI Responses provider
 - Strict checks and tests (`ruff`, `mypy`, `pytest`)
 
 Roadmap details are tracked in [`PLAN.md`](./PLAN.md).
